@@ -7,6 +7,7 @@ const {Todo} = require('./models/Todo');
 const {User} = require('./models/User');
 
 const app = express();
+const port = process.env.PORT || 3000; // use port 3000 unless there exists a preconfigured port
 
 //Middleware
 app.use( bodyParser.json() );
@@ -43,9 +44,9 @@ app.get( '/todos/:id', (req, res) => {
     }).catch( e => res.status(400).send() );
 });
 
-// Listen on port 3000
-app.listen( 3000, () => {
-    console.log('Started on port 3000');
+// Listen on port
+app.listen( port, () => {
+    console.log( `Started on port ${port}`);
 });
 
 module.exports = {app};
