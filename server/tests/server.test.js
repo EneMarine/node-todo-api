@@ -96,3 +96,37 @@ describe('GET /todos/:id', () => {
             .end( done );
     });
 });
+
+describe('DELETE /todos/:id', () => {
+    it('should remove a todo', done => {
+        let id = todos[1]._id.toHexString();
+        request(app)
+            .delete(`/todos/${id}`) //toHexString : renvoie un string plutot qu'un objet
+            .expect(200)
+            .expect( res => {
+                expect( res.body.todo._id ).to.equal( id );
+            })
+            .end( (err, res) => {
+                if( err ) return done(err);
+                Todo.findById( id ).then( todos => {
+                    expect(todos).to.not.exist;
+                    done();
+                }).catch( e => done(e) );
+            });
+    });
+
+    it('should return 404 if todo not found', done => {
+        let id = new ObjectID();
+        request(app)
+            .delete(`/todos/${id.toHexString()}`) //toHexString : renvoie un string plutot qu'un objet
+            .expect(404)
+            .end( done );
+    });
+
+    it('should return 404 for non-object ids', done => {
+        request(app)
+            .delete(`/todos/123`) //toHexString : renvoie un string plutot qu'un objet
+            .expect(404)
+            .end( done );
+    });
+});
