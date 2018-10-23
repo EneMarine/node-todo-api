@@ -11,7 +11,9 @@ const todos = [{
     text: 'First test todo'
 }, {
     _id: new ObjectID(),
-    text: 'Second test todo'
+    text: 'Second test todo',
+    completed: true,
+    completedAt: 333
 }];
 
 beforeEach( done => {
@@ -128,5 +130,49 @@ describe('DELETE /todos/:id', () => {
             .delete(`/todos/123`) //toHexString : renvoie un string plutot qu'un objet
             .expect(404)
             .end( done );
+    });
+});
+
+describe('PATCH /todos/:id', () => {
+    it('should update the todo', done => {
+        let id = todos[0]._id.toHexString();
+        let text = 'Updated first todo';
+        request(app)
+            .patch(`/todos/${id}`) //toHexString : renvoie un string plutot qu'un objet
+            .send({
+                text,
+                completed: true
+            })
+            .expect(200)
+            .end( (err, res) => {
+                if( err ) return done(err);
+                Todo.findById( id ).then( todos => {
+                    expect( todos.text ).to.equal( text );
+                    expect( todos.completed ).to.equal( true );
+                    expect( todos.completedAt ).to.be.a( 'number' );
+                    done();
+                }).catch( e => done(e) );
+            });
+    });
+
+    it('should clear completedAt when todo is not completed', done => {
+        let id = todos[1]._id.toHexString();
+        let text = 'Updated second todo';
+        request(app)
+            .patch(`/todos/${id}`) //toHexString : renvoie un string plutot qu'un objet
+            .send({
+                text,
+                completed: false
+            })
+            .expect(200)
+            .end( (err, res) => {
+                if( err ) return done(err);
+                Todo.findById( id ).then( todos => {
+                    expect( todos.text ).to.equal( text );
+                    expect( todos.completed ).to.equal( false );
+                    expect( todos.completedAt ).to.be.equal( null );
+                    done();
+                }).catch( e => done(e) );
+            });
     });
 });
