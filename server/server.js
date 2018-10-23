@@ -8,6 +8,7 @@ const {ObjectID} = require('mongodb');
 const {mongoose} = require('./db/mongoose');
 const {Todo} = require('./models/Todo');
 const {User} = require('./models/User');
+const {authenticate} = require('./middleware/authenticate');
 
 const app = express();
 const port = process.env.PORT || 3000; // use port 3000 unless there exists a preconfigured port
@@ -91,6 +92,11 @@ app.post( '/users', (req, res) => {
     }).catch( e => {
         res.status(400).send(e);
     });
+});
+
+//GET current user
+app.get( '/users/me', authenticate, (req, res) => {
+    res.send( req.user );
 });
 
 // Listen on port
