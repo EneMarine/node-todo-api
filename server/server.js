@@ -1,46 +1,29 @@
-const mongoose = require('mongoose');
+const express = require('express');
+const bodyParser = require('body-parser');
 
-const Url = 'mongodb://localhost:27017/'; // Connection URL
-const DbName = 'TodoApp'; // Database Name
+const {mongoose} = require('./db/mongoose');
+const {Todo} = require('./models/Todo');
+const {User} = require('./models/User');
 
-// mongoose.Promise = global.Promise; //Paramètre quel type de Promise utiliser
-mongoose.connect( Url + DbName );
+const app = express();
 
-const TodoSchema = new mongoose.Schema({
-    text: {
-        type: String,
-        required: true,
-        minlength: 1,
-        trim: true
-    },
-    completed: {
-        type: Boolean,
-        default: false,
-    },
-    completedAt: {
-        type: Number,
-        default: null
-    }
-});
-const UserSchema = new mongoose.Schema({
-    email: {
-        type: String,
-        required: true,
-        minlength: 1,
-        trim: true
-    }
+//Middleware
+app.use( bodyParser.json() );
+
+//POST API
+app.post( '/todos', (req, res) => {
+    let todo = new Todo({
+        text: req.body.text
+    });
+
+    todo.save().then((doc) => {
+        res.send(doc);
+    }, (e) => {
+        res.status(400).send(e);
+    });
 });
 
-const Todo = mongoose.model( 'Todo', TodoSchema );
-const User = mongoose.model( 'User', TodoSchema );
-
-let newTodo =  new Todo({
-    text: 'Eat dinner'
-});
-
-newTodo.save().then( doc => {
-    console.log('Saved todo', doc);
-},
-(e) => {
-    console.log('Unable to save todo');
+// Listen on port 3000
+app.listen( 3000, () => {
+    console.log('Started on port 3000');
 });
