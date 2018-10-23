@@ -23,6 +23,15 @@ app.post( '/todos', (req, res) => {
     });
 });
 
+//GET api
+app.get( '/todos', (req, res) => {
+    Todo.find().then( todos => {
+        res.send({todos});
+    }, e => {
+        res.status(400).send(e);
+    });
+});
+
 // Listen on port 3000
 app.listen( 3000, () => {
     console.log('Started on port 3000');
