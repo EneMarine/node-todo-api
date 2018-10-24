@@ -48,6 +48,17 @@ UserSchema.methods.generateAuthToken = function (){
     });
 };
 
+UserSchema.methods.removeToken = function ( token ){
+    let user = this;
+    return user.update({
+        $pull: {
+            tokens: {
+                token
+            }
+        }
+    });
+};
+
 //Override a method (change return function after POST)
 UserSchema.methods.toJSON = function (){
     let user = this;
