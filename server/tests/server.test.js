@@ -207,7 +207,7 @@ describe('POST /users', () => {
                     expect(user).to.exist;
                     expect(user.password).to.not.equal(password);
                     done();
-                });
+                }).catch( e => done(err) );
             } );
     });
 
@@ -239,5 +239,73 @@ describe('POST /users', () => {
             .send({email, password})
             .expect(400)
             .end( done );
+    });
+});
+
+describe('POST /users/login', () => {
+    it('should login user and return auth token', done => {
+        let credentials = {
+            email: users[1].email,
+            password: users[1].password,
+        }
+        request(app)
+            .post('/users/login')
+            .send(credentials)
+            .expect(200)
+            .expect( res => {
+                expect( res.headers['x-auth'] ).to.exist;
+            })
+            .end( (err, res) => {
+                if( err ) return done(err);
+                User.findById(users[1]._id).then( user => {
+                    expect(user.tokens[0]).to.include({
+                        access: 'auth',
+                        token: res.headers['x-auth']
+                    });
+                    done();
+                }).catch( e => done(err) );
+            });
+    });
+
+    it('should reject invalid login (bad email)', done => {
+        let credentials = {
+            email: 'test@test.fr',
+            password: users[1].password,
+        }
+        request(app)
+            .post('/users/login')
+            .send(credentials)
+            .expect(400)
+            .expect( res => {
+                expect( res.headers['x-auth'] ).to.not.exist;
+            })
+            .end( (err, res) => {
+                if( err ) return done(err);
+                User.findById(users[1]._id).then( user => {
+                    expect(user.tokens.length).to.equal(0);
+                    done();
+                }).catch( e => done(err) );
+            });
+    });
+
+    it('should reject invalid login (bad password)', done => {
+        let credentials = {
+            email: users[1].email,
+            password: '123456789',
+        }
+        request(app)
+            .post('/users/login')
+            .send(credentials)
+            .expect(400)
+            .expect( res => {
+                expect( res.headers['x-auth'] ).to.not.exist;
+            })
+            .end( (err, res) => {
+                if( err ) return done(err);
+                User.findById(users[1]._id).then( user => {
+                    expect(user.tokens.length).to.equal(0);
+                    done();
+                }).catch( e => done(err) );
+            });
     });
 });
